@@ -5,125 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket to Mars Game</title>
     <style>
-        /* ton style CSS existant */
         body {
             margin: 0;
+            overflow: hidden;
+            background: black;
             color: white;
             font-family: Arial, sans-serif;
-            overflow: hidden;
-            background-color: black; /* Fond noir pour l'espace */
         }
-
-        #rocketContainer {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: linear-gradient(black, darkblue, black); /* Arrière-plan espace */
-        }
-
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            width: 2px;
-            height: 2px;
-            animation: twinkle 2s infinite;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
-        }
-
         .rocket {
-            position: absolute;
-            bottom: 0;
             width: 50px;
             height: 100px;
-            background: linear-gradient(to bottom, red, blue);
-            border-radius: 25px 25px 0 0;
-            cursor: pointer;
-        }
-
-        .flame {
+            background: url('rocket.png') no-repeat center center;
+            background-size: contain;
             position: absolute;
-            bottom: -20px;
+            bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 20px;
-            height: 40px;
-            background: orange;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: flicker 0.1s infinite alternate;
         }
-
-        #distance {
+        .ufo {
+            width: 60px;
+            height: 30px;
+            background: url('ufo.png') no-repeat center center;
+            background-size: contain;
+            position: absolute;
+        }
+        #fuelDisplay, #distanceDisplay, #levelDisplay, #messageDisplay {
             position: absolute;
             top: 10px;
-            right: 10px;
-            font-size: 24px;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        #message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 32px;
-            color: yellow;
-            max-width: 400px;
-            text-align: center;
-            white-space: normal;
-            display: none;
-        }
-
-        #finalMessage {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: yellow;
-            text-align: center;
-            display: none;
-            animation: fadeIn 2s ease-in-out;
-        }
-
-        #flag {
-            position: absolute;
-            top: 50%;
             left: 10px;
-            width: 100px;
-            height: 60px;
-            background-image: url('https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg'); 
-            background-size: cover;
-            animation: wave 2s infinite alternate;
-            display: none;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes wave {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(10deg); }
-        }
-
-        @keyframes flicker {
-            0% { height: 40px; opacity: 0.8; }
-            100% { height: 60px; opacity: 0.3; }
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <!-- Intégration de la musique de fond -->
     <audio id="backgroundMusic" autoplay loop>
         <source src="espace-120280.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
@@ -132,104 +46,33 @@
     <div id="rocketContainer"></div>
     
     <script>
-        // Créer des étoiles
-        function createStars() {
-            var container = document.getElementById('rocketContainer');
-            for (let i = 0; i < 100; i++) { 
-                var star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * window.innerWidth + 'px';
-                star.style.top = Math.random() * window.innerHeight + 'px';
-                container.appendChild(star);
-            }
-        }
-
-        createStars(); 
-
         // Variables globales
         var container = document.getElementById('rocketContainer');
-        var distance = 225000000;
+        var distance = 225000000; // Distance à Mars
+        var fuel = 100; // Niveau de carburant (de 0 à 100%)
         var rocketInterval;
-        var messageCount = 0;
+        var ufoInterval;
+        var level = 1; // Niveau initial
+        var distanceGoal = 20000000; // Objectif de distance pour passer au niveau suivant
         var gameOver = false;
-        var kmDeductionOptions = [50000, 80000];
-        var currentDeductionIndex = 0;
 
-         var messages = [
-            "1. Build a wall on the southern border.",
-            "2. Reduce illegal immigration.",
-            "3. Renegotiate international trade deals.",
-            "4. Repeal and replace Obamacare.",
-            "5. Appoint conservative judges.",
-            "6. Protect the Second Amendment.",
-            "7. Strengthen the military.",
-            "8. Cut taxes for the middle class.",
-            "9. Withdraw from the Paris Climate Accord.",
-            "10. Stop the Iran nuclear deal.",
-            "11. Support law enforcement.",
-            "12. Ban sanctuary cities.",
-            "13. Combat the opioid crisis.",
-            "14. Promote energy independence.",
-            "15. Deregulate businesses.",
-            "16. Keep the government small.",
-            "17. Support American farmers.",
-            "18. Build new infrastructure.",
-            "19. Modernize airports and roads.",
-            "20. Improve education for all.",
-            "21. Cut unnecessary spending.",
-            "22. Protect Social Security and Medicare.",
-            "23. Reform welfare programs.",
-            "24. End Common Core.",
-            "25. Rebuild the economy.",
-            "26. Ensure free speech on college campuses.",
-            "27. Support American manufacturing.",
-            "28. Create jobs in technology.",
-            "29. Fix the VA healthcare system.",
-            "30. Improve the immigration process.",
-            "31. Reform trade with China.",
-            "32. Bring back American companies.",
-            "33. Secure our elections.",
-            "34. Preserve religious liberty.",
-            "35. Lower prescription drug prices.",
-            "36. Reform the criminal justice system.",
-            "37. Strengthen NATO.",
-            "38. Hold the UN accountable.",
-            "39. Stop foreign wars.",
-            "40. Advance peace in the Middle East.",
-            "41. Protect national parks.",
-            "42. Reduce student loan debt.",
-            "43. Empower women in business.",
-            "44. Promote small businesses.",
-            "45. Invest in space exploration.",
-            "46. Improve cybersecurity.",
-            "47. Secure 5G networks.",
-            "48. Stop big tech censorship.",
-            "49. Ensure free and fair trade.",
-            "50. Protect American historical monuments."
-        ];
-
-        // Affichage distance
+        // Affichage distance, fuel et niveau
         var distanceDisplay = document.createElement('div');
-        distanceDisplay.id = 'distance';
-        distanceDisplay.innerText = 'Distance to Mars: 225000000 km';
-        container.appendChild(distanceDisplay);
-
-        // Messages spéciaux
+        var fuelDisplay = document.createElement('div');
+        var levelDisplay = document.createElement('div');
         var messageDisplay = document.createElement('div');
-        messageDisplay.id = 'message';
-        container.appendChild(messageDisplay);
-
-        // Message final
         var finalMessage = document.createElement('div');
-        finalMessage.id = 'finalMessage';
-        finalMessage.innerText = "Now you know why you should vote for Donald Trump.";
-        container.appendChild(finalMessage);
 
-        // Drapeau américain
-        var flag = document.createElement('div');
-        flag.id = 'flag';
-        container.appendChild(flag);
-
+        distanceDisplay.innerText = 'Distance to Mars: ' + distance + ' km';
+        fuelDisplay.innerText = 'Fuel: ' + fuel + '%';
+        levelDisplay.innerText = 'Level: ' + level;
+        messageDisplay.innerText = '';
+        
+        container.appendChild(distanceDisplay);
+        container.appendChild(fuelDisplay);
+        container.appendChild(levelDisplay);
+        container.appendChild(messageDisplay);
+        
         // Créer une fusée
         function createRocket() {
             if (gameOver) return;
@@ -238,17 +81,11 @@
             rocket.className = 'rocket';
             container.appendChild(rocket);
 
-            var flame = document.createElement('div');
-            flame.className = 'flame';
-            rocket.appendChild(flame);
-
-            rocket.style.left = Math.random() * (window.innerWidth - 50) + 'px';
- 
-
+            // Mouvement de la fusée
             let movement = setInterval(() => {
                 let currentBottom = parseFloat(rocket.style.bottom) || 0;
-                if (currentBottom < window.innerHeight) {
-                    rocket.style.bottom = currentBottom + 4 + 'px';
+                if (currentBottom < window.innerHeight - 100) {
+                    rocket.style.bottom = currentBottom + 5 + 'px';
                 } else {
                     clearInterval(movement);
                     container.removeChild(rocket);
@@ -258,39 +95,112 @@
             rocket.addEventListener('click', function() {
                 if (gameOver) return;
 
-                let kmDeducted = kmDeductionOptions[currentDeductionIndex];
-                distance -= kmDeducted;
+                let kmGained = Math.floor(Math.random() * 100) + 50; // Gain aléatoire de km
+                distance -= kmGained;
                 distanceDisplay.innerText = 'Distance to Mars: ' + distance + ' km';
 
-                let randomIndex = Math.floor(Math.random() * messages.length);
-                messageDisplay.innerText = messages[randomIndex] + `\nYou deducted ${kmDeducted} km!`;
-                messageDisplay.style.display = 'block';
-                setTimeout(() => {
-                    messageDisplay.style.display = 'none';
-                }, 7000);
-
-                messageCount++;
-                if (messageCount >= 50) {
-                    setTimeout(() => {
-                        finalMessage.style.display = 'block';
-                        flag.style.display = 'block';
-                        stopGame();
-                    }, 3000);
+                // Vérifier si le joueur a atteint l'objectif de distance
+                if (distance <= distanceGoal) {
+                    levelUp(); // Passer au niveau suivant
                 }
 
-                currentDeductionIndex = (currentDeductionIndex + 1) % kmDeductionOptions.length;
+                // Ajouter 1% de fuel
+                if (fuel < 100) {
+                    fuel += 1;
+                    fuelDisplay.innerText = 'Fuel: ' + fuel + '%';
+                }
+
                 container.removeChild(rocket);
             });
         }
 
-        // Arrêter le jeu
-        function stopGame() {
-            gameOver = true;
-            clearInterval(rocketInterval);
+        // Créer une soucoupe volante
+        function createUFO() {
+            if (gameOver) return;
+
+            var ufo = document.createElement('div');
+            ufo.className = 'ufo';
+            ufo.style.top = Math.random() * (window.innerHeight - 30) + 'px'; // Position aléatoire en hauteur
+            ufo.style.left = '0px';
+            container.appendChild(ufo);
+
+            // Vitesse des soucoupes selon le niveau
+            let ufoSpeed = 2 + (level - 1); // Augmenter la vitesse avec chaque niveau
+            let movement = setInterval(() => {
+                let currentLeft = parseFloat(ufo.style.left) || 0;
+                if (currentLeft < window.innerWidth) {
+                    ufo.style.left = currentLeft + ufoSpeed + 'px';
+                } else {
+                    clearInterval(movement);
+                    container.removeChild(ufo);
+                }
+            }, 50);
+
+            // Gestion des clics sur la soucoupe
+            ufo.addEventListener('click', function() {
+                if (gameOver) return;
+
+                fuel += 30; // Gain de 30% de fuel
+                if (fuel > 100) fuel = 100; // Limiter à 100%
+                fuelDisplay.innerText = 'Fuel: ' + fuel + '%';
+                container.removeChild(ufo);
+            });
+
+            // Gestion des collisions avec les fusées
+            ufo.addEventListener('animationiteration', () => {
+                if (gameOver) return;
+
+                var rockets = document.getElementsByClassName('rocket');
+                for (let rocket of rockets) {
+                    var rectUFO = ufo.getBoundingClientRect();
+                    var rectRocket = rocket.getBoundingClientRect();
+                    if (rectUFO.left < rectRocket.right && rectUFO.right > rectRocket.left &&
+                        rectUFO.top < rectRocket.bottom && rectUFO.bottom > rectRocket.top) {
+                        // Collision
+                        fuel -= 10; // Perte de 10% de carburant
+                        distance += 100000; // Perte de 100 km
+                        fuelDisplay.innerText = 'Fuel: ' + fuel + '%';
+                        distanceDisplay.innerText = 'Distance to Mars: ' + distance + ' km';
+                        container.removeChild(ufo);
+                        container.removeChild(rocket);
+                        if (fuel <= 0) {
+                            gameOver = true;
+                            messageDisplay.innerText = 'Game Over!';
+                            stopGame();
+                        }
+                        break;
+                    }
+                }
+            });
         }
 
-        // Générer des fusées à intervalles
-        rocketInterval = setInterval(createRocket, 1000);
+        // Passer au niveau suivant
+        function levelUp() {
+            level++;
+            distanceGoal += 20000000; // Augmenter l'objectif de distance
+            fuel += 10; // Bonus de carburant
+            if (fuel > 100) fuel = 100; // Limiter à 100%
+            fuelDisplay.innerText = 'Fuel: ' + fuel + '%';
+            levelDisplay.innerText = 'Level: ' + level; // Afficher le niveau
+            alert('Level Up! You are now at level ' + level);
+        }
+
+        // Démarrer le jeu
+        function startGame() {
+            rocketInterval = setInterval(createRocket, 2000);
+            ufoInterval = setInterval(createUFO, 3000);
+        }
+
+        // Arrêter le jeu
+        function stopGame() {
+            clearInterval(rocketInterval);
+            clearInterval(ufoInterval);
+            gameOver = true;
+        }
+
+        // Lancer le jeu
+        startGame();
     </script>
 </body>
 </html>
+
