@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket to Mars Game</title>
     <style>
+        /* ton style CSS existant */
         body {
             margin: 0;
             color: white;
@@ -15,8 +16,8 @@
 
         #rocketContainer {
             position: relative;
-            width: 100vw;  /* Largeur de la fenêtre (viewport) */
-            height: 100vh; /* Hauteur de la fenêtre (viewport) */
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             background: linear-gradient(black, darkblue, black); /* Arrière-plan espace */
         }
@@ -63,7 +64,7 @@
             top: 10px;
             right: 10px;
             font-size: 24px;
-            background-color: rgba(0, 0, 0, 0.5); /* Légère transparence pour le fond */
+            background-color: rgba(0, 0, 0, 0.5);
             padding: 10px;
             border-radius: 5px;
         }
@@ -99,7 +100,7 @@
             left: 10px;
             width: 100px;
             height: 60px;
-            background-image: url('https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg'); /* Lien vers un drapeau américain */
+            background-image: url('https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg'); 
             background-size: cover;
             animation: wave 2s infinite alternate;
             display: none;
@@ -122,7 +123,14 @@
     </style>
 </head>
 <body>
+    <!-- Intégration de la musique de fond -->
+    <audio id="backgroundMusic" autoplay loop>
+        <source src="espace-120280.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
     <div id="rocketContainer"></div>
+    
     <script>
         // Créer des étoiles
         function createStars() {
@@ -147,7 +155,7 @@
         var kmDeductionOptions = [50000, 80000];
         var currentDeductionIndex = 0;
 
-        var messages = [
+         var messages = [
             "1. Build a wall on the southern border.",
             "2. Reduce illegal immigration.",
             "3. Renegotiate international trade deals.",
@@ -214,7 +222,7 @@
         // Message final
         var finalMessage = document.createElement('div');
         finalMessage.id = 'finalMessage';
-        finalMessage.innerText = "Now you know why you should vote for Donald Trump.Just like Elon, the impossible becomes possible!";
+        finalMessage.innerText = "Now you know why you should vote for Donald Trump.";
         container.appendChild(finalMessage);
 
         // Drapeau américain
@@ -240,7 +248,6 @@
             let movement = setInterval(() => {
                 let currentBottom = parseFloat(rocket.style.bottom) || 0;
                 if (currentBottom < window.innerHeight) {
- 
                     rocket.style.bottom = currentBottom + 4 + 'px';
                 } else {
                     clearInterval(movement);
